@@ -13,6 +13,12 @@ flowchart LR
     XYZ --> GUI[PyQt6 四视图 / 10Hz]
 ```
 
+## 界面截图
+
+![PyQt 四视图：RGB、原始深度、TRT 增强深度和彩色 3D 点云](docs/images/ui-screenshot.png)
+
+实际 GUI 的离线示例截图：使用官方 `examples/0`、TRT FP16 预测和 GPU 点云投影展示四个视图。实时相机性能见下文实测。
+
 ## 启动与设备查询
 
 下文所有项目文件路径均相对仓库根目录；克隆后先进入 `lingbot-depth-realsense/`。已有环境与引擎时直接运行：
