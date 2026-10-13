@@ -1,20 +1,28 @@
 RealSense + LingBot-Depth TRT 实时 GUI
 
 启动
-  cd /data/models/lingbot/lingbot-depth-realsense
+  所有项目路径相对仓库根目录；先进入克隆得到的 lingbot-depth-realsense/。
   ./run_gui.sh
 
-单设备自动选择；当前相机为 D435i，序列号 261922076696。
-指定设备：./run_gui.sh --serial 261922076696
-指定引擎：./run_gui.sh --engine /absolute/path/lingbot_depth_nt2000.engine
+单设备自动选择，型号和序列号在运行时从 SDK 读取。
+查询连接设备（不打开视频流）：
+  env -u PYTHONPATH .venv-optimization/bin/python - <<'PY'
+import pyrealsense2 as rs
+context = rs.context()
+for device in context.query_devices():
+    print(device.get_info(rs.camera_info.name), device.get_info(rs.camera_info.serial_number))
+PY
+多设备时将查询得到的目标序列号保存到 realsense_serial：
+  ./run_gui.sh --serial "$realsense_serial"
+指定引擎：./run_gui.sh --engine result/optimization/reference-trt-nt2000-fp16/lingbot_depth_nt2000.engine
 
 环境
   使用已有 .venv-optimization（torch 2.8.0+cu128、TensorRT 10.12.0.36）。
   uv pip install --python .venv-optimization/bin/python -r tools/realsense_gui/requirements.txt
-  当前用户 uv 默认索引已配置为清华镜像，位于 ~/.config/uv/uv.toml。
+  可在仓库根目录通过 uv.toml 配置清华默认索引，配置示例见 README.md。
   启动脚本清除 ROS PYTHONPATH，应用选择 PyQt6 自带插件，避免 OpenCV Qt5 插件冲突。
-  需要本机图形显示与 OpenGL；当前 DISPLAY=:1。
-  Ubuntu Qt6 系统依赖：sudo apt-get install libxcb-cursor0（本机已安装）。
+  需要当前机器可用的图形显示与 OpenGL；DISPLAY 使用当前桌面会话的值。
+  Ubuntu Qt6 系统依赖：sudo apt-get install libxcb-cursor0。
 
 操作
   窗口打开后自动启动，初始化和 GPU 预热在后台进行。
@@ -35,7 +43,7 @@ RealSense + LingBot-Depth TRT 实时 GUI
   应用延迟为主机 SDK 收到帧到 GUI 更新提交；不包括曝光、USB 和显示器扫描。
 
 实机验收（预热后连续 60 秒，保存报告与截图后自动退出）
-  ./run_gui.sh --serial 261922076696 --verify-seconds 60 \
+  ./run_gui.sh --verify-seconds 60 \
     --report result/realsense_gui/verification.json \
     --screenshot result/realsense_gui/gui.png
   验收只统计截止时刻之前的新结果，检查几何一致、RGB/输出变化和资源清理。

@@ -1,0 +1,377 @@
+{
+  "status": "PASS",
+  "reference_repository": "https://github.com/Ar-Ray-code/lingbot-depth-trt",
+  "reference_commit": "60e69ab6ea5c65a2f19a22388a20d5969a8f556b",
+  "engine": "result/optimization/reference-trt-nt2000-fp16/lingbot_depth_nt2000.engine",
+  "tensorrt_version": "10.12.0.36",
+  "num_tokens": 2000,
+  "equivalent_resolution_level": 3,
+  "batch_size": 1,
+  "execution_stream": "dedicated non-default CUDA stream",
+  "input_and_output_resolution": [
+    640,
+    480
+  ],
+  "precision": "float16",
+  "semantic_changes": [
+    "depth-token masking disabled",
+    "RGB antialias disabled",
+    "output-mask head omitted from engine; all returned depths unmasked"
+  ],
+  "measurement": "Single-frame synchronized host wall time; GPU-resident inputs. Loading, conversion, compilation, input preprocessing and transfer excluded.",
+  "baseline": [
+    {
+      "scene": 0,
+      "mean_ms": 147.32772916322574,
+      "median_ms": 147.31754059903324,
+      "p95_ms": 147.5657729897648,
+      "runs": 20
+    },
+    {
+      "scene": 1,
+      "mean_ms": 147.9991937521845,
+      "median_ms": 147.4294929066673,
+      "p95_ms": 151.21665713377297,
+      "runs": 20
+    },
+    {
+      "scene": 2,
+      "mean_ms": 147.7657884825021,
+      "median_ms": 147.5172599311918,
+      "p95_ms": 148.80972099490464,
+      "runs": 20
+    },
+    {
+      "scene": 3,
+      "mean_ms": 147.83156588673592,
+      "median_ms": 147.75843895040452,
+      "p95_ms": 148.3206960838288,
+      "runs": 20
+    },
+    {
+      "scene": 4,
+      "mean_ms": 148.210353392642,
+      "median_ms": 147.92055496945977,
+      "p95_ms": 149.59436212666333,
+      "runs": 20
+    },
+    {
+      "scene": 5,
+      "mean_ms": 148.38365056784824,
+      "median_ms": 148.16580363549292,
+      "p95_ms": 149.43424402736127,
+      "runs": 20
+    },
+    {
+      "scene": 6,
+      "mean_ms": 141.8983223498799,
+      "median_ms": 140.9316915087402,
+      "p95_ms": 147.01823610812426,
+      "runs": 20
+    },
+    {
+      "scene": 7,
+      "mean_ms": 148.71910136425868,
+      "median_ms": 148.2825914863497,
+      "p95_ms": 150.47874487936497,
+      "runs": 20
+    }
+  ],
+  "results": [
+    {
+      "scene": 0,
+      "engine_only": {
+        "mean_ms": 67.32632795814425,
+        "median_ms": 67.37648800481111,
+        "p95_ms": 67.51371384598315,
+        "runs": 50
+      },
+      "engine_and_projection": {
+        "mean_ms": 67.53020972479135,
+        "median_ms": 67.52393604256213,
+        "p95_ms": 67.70272715948522,
+        "runs": 50
+      },
+      "vs_reference_fp16": {
+        "mean_abs_m": 0.0008530727936886251,
+        "p99_abs_m": 0.01171875,
+        "max_abs_m": 0.140625,
+        "mean_relative_pct": 0.027717361808754504,
+        "comparison_pixels_pct": 100.0
+      },
+      "vs_standard_level3": {
+        "mean_abs_m": 0.008332861587405205,
+        "p99_abs_m": 0.03632831573486328,
+        "max_abs_m": 0.4239630699157715,
+        "mean_relative_pct": 0.3491699229925871,
+        "comparison_pixels_pct": 99.64876174926758
+      }
+    },
+    {
+      "scene": 1,
+      "engine_only": {
+        "mean_ms": 67.53933157771826,
+        "median_ms": 67.55129201337695,
+        "p95_ms": 67.6945170853287,
+        "runs": 50
+      },
+      "engine_and_projection": {
+        "mean_ms": 67.72067960817367,
+        "median_ms": 67.69692001398653,
+        "p95_ms": 67.97661585733294,
+        "runs": 50
+      },
+      "vs_reference_fp16": {
+        "mean_abs_m": 0.0003831068752333522,
+        "p99_abs_m": 0.001953125,
+        "max_abs_m": 0.041015625,
+        "mean_relative_pct": 0.035084495902992785,
+        "comparison_pixels_pct": 100.0
+      },
+      "vs_standard_level3": {
+        "mean_abs_m": 0.0035471736919134855,
+        "p99_abs_m": 0.015175819396972656,
+        "max_abs_m": 0.28630900382995605,
+        "mean_relative_pct": 0.28799467254430056,
+        "comparison_pixels_pct": 100.0
+      }
+    },
+    {
+      "scene": 2,
+      "engine_only": {
+        "mean_ms": 67.60297046042979,
+        "median_ms": 67.62419105507433,
+        "p95_ms": 67.74855800904334,
+        "runs": 50
+      },
+      "engine_and_projection": {
+        "mean_ms": 67.72372485138476,
+        "median_ms": 67.72785994689912,
+        "p95_ms": 67.87545513361692,
+        "runs": 50
+      },
+      "vs_reference_fp16": {
+        "mean_abs_m": 0.00026455242186784744,
+        "p99_abs_m": 0.0009765625,
+        "max_abs_m": 0.005859375,
+        "mean_relative_pct": 0.02452220651321113,
+        "comparison_pixels_pct": 100.0
+      },
+      "vs_standard_level3": {
+        "mean_abs_m": 0.0033996058627963066,
+        "p99_abs_m": 0.009394526481628418,
+        "max_abs_m": 0.02017676830291748,
+        "mean_relative_pct": 0.2914880635216832,
+        "comparison_pixels_pct": 100.0
+      }
+    },
+    {
+      "scene": 3,
+      "engine_only": {
+        "mean_ms": 67.80317738186568,
+        "median_ms": 67.77859246358275,
+        "p95_ms": 67.96423904597759,
+        "runs": 50
+      },
+      "engine_and_projection": {
+        "mean_ms": 67.87556091323495,
+        "median_ms": 67.88484414573759,
+        "p95_ms": 68.0388209875673,
+        "runs": 50
+      },
+      "vs_reference_fp16": {
+        "mean_abs_m": 0.012350615113973618,
+        "p99_abs_m": 0.21875,
+        "max_abs_m": 2.65625,
+        "mean_relative_pct": 0.07326686172746122,
+        "comparison_pixels_pct": 100.0
+      },
+      "vs_standard_level3": {
+        "mean_abs_m": 0.053136296570301056,
+        "p99_abs_m": 1.28125,
+        "max_abs_m": 6.14375114440918,
+        "mean_relative_pct": 0.5051294807344675,
+        "comparison_pixels_pct": 95.40755152702332
+      }
+    },
+    {
+      "scene": 4,
+      "engine_only": {
+        "mean_ms": 67.82571710646152,
+        "median_ms": 67.82586802728474,
+        "p95_ms": 68.0374950170517,
+        "runs": 50
+      },
+      "engine_and_projection": {
+        "mean_ms": 67.9238860681653,
+        "median_ms": 67.92032800149173,
+        "p95_ms": 68.13615490682423,
+        "runs": 50
+      },
+      "vs_reference_fp16": {
+        "mean_abs_m": 0.00035693487734533846,
+        "p99_abs_m": 0.001953125,
+        "max_abs_m": 0.0078125,
+        "mean_relative_pct": 0.01913048909045756,
+        "comparison_pixels_pct": 100.0
+      },
+      "vs_standard_level3": {
+        "mean_abs_m": 0.005613986868411303,
+        "p99_abs_m": 0.012890815734863281,
+        "max_abs_m": 0.03496134281158447,
+        "mean_relative_pct": 0.3045880701392889,
+        "comparison_pixels_pct": 100.0
+      }
+    },
+    {
+      "scene": 5,
+      "engine_only": {
+        "mean_ms": 67.92714952956885,
+        "median_ms": 67.9471209878102,
+        "p95_ms": 68.06512991897762,
+        "runs": 50
+      },
+      "engine_and_projection": {
+        "mean_ms": 68.08678364381194,
+        "median_ms": 67.99994502216578,
+        "p95_ms": 68.14731610938907,
+        "runs": 50
+      },
+      "vs_reference_fp16": {
+        "mean_abs_m": 0.0007121960516087711,
+        "p99_abs_m": 0.0078125,
+        "max_abs_m": 0.076171875,
+        "mean_relative_pct": 0.031096106977201998,
+        "comparison_pixels_pct": 100.0
+      },
+      "vs_standard_level3": {
+        "mean_abs_m": 0.007061703130602837,
+        "p99_abs_m": 0.03125,
+        "max_abs_m": 0.37851595878601074,
+        "mean_relative_pct": 0.3362952498719096,
+        "comparison_pixels_pct": 100.0
+      }
+    },
+    {
+      "scene": 6,
+      "engine_only": {
+        "mean_ms": 68.04628138430417,
+        "median_ms": 68.06150358170271,
+        "p95_ms": 68.15983215346932,
+        "runs": 50
+      },
+      "engine_and_projection": {
+        "mean_ms": 68.13883244991302,
+        "median_ms": 68.14852997194976,
+        "p95_ms": 68.2285230141133,
+        "runs": 50
+      },
+      "vs_reference_fp16": {
+        "mean_abs_m": 0.00038266342016868293,
+        "p99_abs_m": 0.001953125,
+        "max_abs_m": 0.0263671875,
+        "mean_relative_pct": 0.04748630162794143,
+        "comparison_pixels_pct": 100.0
+      },
+      "vs_standard_level3": {
+        "mean_abs_m": 0.003402609843760729,
+        "p99_abs_m": 0.02343738079071045,
+        "max_abs_m": 0.18701171875,
+        "mean_relative_pct": 0.37014163099229336,
+        "comparison_pixels_pct": 100.0
+      }
+    },
+    {
+      "scene": 7,
+      "engine_only": {
+        "mean_ms": 68.06767280213535,
+        "median_ms": 68.08224250562489,
+        "p95_ms": 68.1757798884064,
+        "runs": 50
+      },
+      "engine_and_projection": {
+        "mean_ms": 68.12079543247819,
+        "median_ms": 68.13636794686317,
+        "p95_ms": 68.24249285273254,
+        "runs": 50
+      },
+      "vs_reference_fp16": {
+        "mean_abs_m": 0.00721717206761241,
+        "p99_abs_m": 0.05859375,
+        "max_abs_m": 0.890625,
+        "mean_relative_pct": 0.13105778489261866,
+        "comparison_pixels_pct": 100.0
+      },
+      "vs_standard_level3": {
+        "mean_abs_m": 0.032533396035432816,
+        "p99_abs_m": 0.23573830723762512,
+        "max_abs_m": 1.8562016487121582,
+        "mean_relative_pct": 0.6489126943051815,
+        "comparison_pixels_pct": 99.75781440734863
+      }
+    }
+  ],
+  "cuda_graph_plus_compiled_projection": [
+    {
+      "scene": 0,
+      "mean_ms": 67.50692262779921,
+      "median_ms": 67.54374038428068,
+      "p95_ms": 67.7187368273735,
+      "runs": 50
+    },
+    {
+      "scene": 1,
+      "mean_ms": 67.80671164393425,
+      "median_ms": 67.82109849154949,
+      "p95_ms": 67.93501903302968,
+      "runs": 50
+    },
+    {
+      "scene": 2,
+      "mean_ms": 67.81054261606187,
+      "median_ms": 67.81507655978203,
+      "p95_ms": 67.91877886280417,
+      "runs": 50
+    },
+    {
+      "scene": 3,
+      "mean_ms": 67.92014324106276,
+      "median_ms": 67.94142595026642,
+      "p95_ms": 68.02467117086053,
+      "runs": 50
+    },
+    {
+      "scene": 4,
+      "mean_ms": 67.90960284415632,
+      "median_ms": 67.91970401536673,
+      "p95_ms": 68.01731209270656,
+      "runs": 50
+    },
+    {
+      "scene": 5,
+      "mean_ms": 68.02414573729038,
+      "median_ms": 68.03732202388346,
+      "p95_ms": 68.13871394842863,
+      "runs": 50
+    },
+    {
+      "scene": 6,
+      "mean_ms": 68.14706813544035,
+      "median_ms": 68.15650593489408,
+      "p95_ms": 68.24679602868855,
+      "runs": 50
+    },
+    {
+      "scene": 7,
+      "mean_ms": 68.1282567512244,
+      "median_ms": 68.13784700352699,
+      "p95_ms": 68.22421704418957,
+      "runs": 50
+    }
+  ],
+  "baseline_mean_ms": 147.26696311990963,
+  "engine_only_mean_ms": 67.76732852507848,
+  "engine_and_projection_mean_ms": 67.89005908649415,
+  "combined_mean_ms": 67.9066741996212,
+  "limitations": "FP16 reference path changes model behavior; comparisons are consistency checks, not accuracy against ground truth. Missing output mask prevents identical validity filtering."
+}

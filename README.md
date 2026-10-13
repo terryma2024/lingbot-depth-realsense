@@ -13,21 +13,28 @@ flowchart LR
     XYZ --> GUI[PyQt6 四视图 / 10Hz]
 ```
 
-## 本机启动
+## 启动与设备查询
 
-已有环境与引擎时直接运行：
-
-```bash
-/data/models/lingbot/lingbot-depth-realsense/run_gui.sh --serial 261922076696
-```
-
-通用启动：
+下文所有项目文件路径均相对仓库根目录；克隆后先进入 `lingbot-depth-realsense/`。已有环境与引擎时直接运行：
 
 ```bash
 ./run_gui.sh
 ```
 
-单相机自动选择。窗口打开后会自动开始采集，首次启动需要完成引擎加载和 GPU 预热。当前实机是 **D435i**，不是 D534i；设备型号、序列号、深度比例和内参均从 SDK 读取。
+单相机自动选择。设备型号、序列号、深度比例和内参均在运行时从 SDK 读取，不固定到某台设备。窗口打开后会自动开始采集，首次启动需要完成引擎加载和 GPU 预热。
+
+通过 RealSense SDK 查询当前连接设备的型号与序列号：
+
+```bash
+env -u PYTHONPATH .venv-optimization/bin/python - <<'PY'
+import pyrealsense2 as rs
+context = rs.context()
+for device in context.query_devices():
+    print(device.get_info(rs.camera_info.name), device.get_info(rs.camera_info.serial_number))
+PY
+```
+
+多相机时，将查询结果中目标设备的序列号保存到 shell 变量 `realsense_serial`，再使用 `./run_gui.sh --serial "$realsense_serial"`。查询不会开启视频流。
 
 ## 安装
 
@@ -49,7 +56,7 @@ uv pip install --python .venv-optimization/bin/python -e '.[build,test]'
 
 若已经有匹配的 TensorRT 引擎，只需要应用依赖：`uv pip install --python .venv-optimization/bin/python -e .`。先安装上面的 CUDA 版 torch，避免得到不匹配的 GPU 运行环境。
 
-清华镜像可作为 uv 用户级默认索引，在 `~/.config/uv/uv.toml` 中合并以下配置：
+如需项目内默认使用清华镜像，可在仓库根目录创建 `uv.toml` 并写入以下配置；已配置用户级默认源时可跳过：
 
 ```toml
 [[index]]
@@ -58,7 +65,7 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 default = true
 ```
 
-本机已配置并验证。CUDA wheel 仍通过上面的显式 PyTorch 索引安装。启动脚本清除 ROS 的 `PYTHONPATH`，应用选择 PyQt6 自带插件，避免与 OpenCV 的 Qt 插件冲突。
+CUDA wheel 仍通过上面的显式 PyTorch 索引安装。启动脚本清除 ROS 的 `PYTHONPATH`，应用选择 PyQt6 自带插件，避免与 OpenCV 的 Qt 插件冲突。
 
 ## 下载权重并构建引擎
 
@@ -90,7 +97,7 @@ checkpoint SHA256：`b60cf27ddbd0e51e9b59b03475c0d39d02d2e48ecf8dbb5866f04d46802
 默认读取 `result/optimization/reference-trt-nt2000-fp16/lingbot_depth_nt2000.engine`。也可指定已有引擎：
 
 ```bash
-./run_gui.sh --engine /absolute/path/lingbot_depth_nt2000.engine
+./run_gui.sh --engine result/optimization/reference-trt-nt2000-fp16/lingbot_depth_nt2000.engine
 ```
 
 ## 使用
@@ -122,6 +129,17 @@ checkpoint SHA256：`b60cf27ddbd0e51e9b59b03475c0d39d02d2e48ecf8dbb5866f04d46802
 
 本次验收检查了输入及预测随帧变化、米制几何、刷新率和退出；不是对预测精度的 ground-truth 评估。更多开发与诊断记录见 [docs/DEVELOPMENT_RECORD.md](docs/DEVELOPMENT_RECORD.md)。
 
+## 模型优化过程
+
+从默认 PyTorch 推理、降低 token 数、`torch.compile` 探测，到固定形状 FP16 TensorRT、CUDA Graph 和 GPU 点云投影的选择依据、计时范围与数值差异，见：
+
+- [优化过程与性能对比](docs/MODEL_OPTIMIZATION_PROCESS.md)
+- [RTX 5080 完整优化复现手册](docs/OPTIMIZATION_REPRODUCE.md)
+- [RTX 5060 Ti 最优组合复现记录](docs/OPTIMIZATION_5060_TI.txt)
+- [RTX 5080 原始结果快照](docs/optimization-results-20261013.json)与 [RTX 5060 Ti 原始结果快照](docs/optimization-results-5060-ti-20261013.json)
+
+`tools/optimization/` 和 `examples/0`–`examples/7` 已随仓库提供；模型权重和引擎仍需下载或在目标 GPU 构建。
+
 ## 测试与自动验收
 
 ```bash
@@ -146,11 +164,12 @@ CPU/Qt 测试 27 项通过，1 项真实 GPU 集成测试默认跳过；显式 G
 
 ## 来源与代码结构
 
-- [LingBot-Depth](https://github.com/robbyant/lingbot-depth)：`mdm/`、`example.py`、`examples/0` 来自 commit `f3a237e434ae987bc38281476d6cfb5df3e4d739`；保留 Apache-2.0 许可和来源文档。`attention.py` 加入 Blackwell 上禁用 FA3 的兼容处理。
+- [LingBot-Depth](https://github.com/robbyant/lingbot-depth)：`mdm/`、`example.py`、`examples/0`–`examples/7` 来自 commit `f3a237e434ae987bc38281476d6cfb5df3e4d739`；保留 Apache-2.0 许可和来源文档。`attention.py` 加入 Blackwell 上禁用 FA3 的兼容处理。
 - [LingBot-Depth TRT 参考实现](https://github.com/Ar-Ray-code/lingbot-depth-trt)：构建时使用上述固定 commit；GUI 复用其导出引擎。
 - [pyrealsense2](https://pypi.org/project/pyrealsense2/)：相机采集、对齐、比例和内参。
 - `tools/realsense_gui/`：数据、相机、GPU runtime、后台 pipeline、四视图和验收统计。
 - `tests/realsense_gui/`：帧所有权、单位/内参、CUDA 图换帧、生命周期、Qt 与验收判定测试。
+- `tools/optimization/`：编译、TensorRT 组合基准及 8 场景对比图复现脚本。
 - `docs/superpowers/`：按 Superpowers 流程确认的设计和实施计划。
 
 模型权重、引擎、虚拟环境、SDK 日志和私人相机截图均由 `.gitignore` 排除。

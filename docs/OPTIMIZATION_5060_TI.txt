@@ -1,0 +1,130 @@
+LingBot-Depth-v0.5: best documented optimization on RTX 5060 Ti
+
+Source document:
+  docs/OPTIMIZATION_REPRODUCE.md (historical RTX 5080 experiments)
+Local reference copy:
+  docs/OPTIMIZATION_REPRODUCE.md
+Remote RTX 5080 result snapshot:
+  docs/optimization-results-20261013.json
+
+Selected configuration:
+  TensorRT 10.12.0.36, FP16, 2000 target tokens, 640 x 480, batch size 1.
+  TensorRT CUDA Graph replay plus torch.compile point-cloud projection.
+  The reference benchmark also measures plain TensorRT and TensorRT plus
+  uncompiled GPU point-cloud projection for a direct local comparison.
+
+Environments:
+  .venv: original PyTorch 2.7.1 / CUDA 12.8 installation.
+  .venv-optimization: Python 3.12.3, PyTorch 2.8.0+cu128,
+    torchvision 0.23.0+cu128, xFormers 0.0.32.post2, TensorRT 10.12.0.36.
+  The optimization environment was copied from the validated remote environment,
+  excluding remote editable-package paths, then installs this local package.
+  Full reference dependency versions: tools/optimization/requirements.lock.txt.
+  Local installed snapshot: tools/optimization/requirements-5060-ti.lock.txt.
+  Local GPU, driver, and package metadata: result/optimization/local-environment.json.
+  Snapshots describe historical environments; use README.md for this repository's
+  recommended installation and optional build dependencies.
+
+Working directory for every command below:
+  The root of your lingbot-depth-realsense checkout. All project paths are relative.
+
+First install the environment, download weights, and clone the fixed TensorRT
+reference repository using README.md. All eight official examples and the
+optimization tools referenced below are included in this repository.
+
+Build the engine for this GPU:
+  mkdir -p result/logs result/optimization
+  env -u PYTHONPATH HF_HUB_OFFLINE=1 .venv-optimization/bin/python -u \
+    result/optimization/reference-lingbot-depth-trt/tools/export_trt.py \
+    --model checkpoints/lingbot-depth-v0.5/model.pt --capture examples/0 \
+    --precision fp16 --num-tokens 2000 --width 640 --height 480 \
+    --work-dir result/optimization/reference-trt-nt2000-fp16 \
+    --skip-ort --workspace-gb 4 --tactic-gb 2 --trt-warmup 10 --trt-runs 100 \
+    > result/logs/reference-trt-export.log 2>&1
+
+Run the full eight-scene comparison and validation:
+  env -u PYTHONPATH HF_HUB_OFFLINE=1 TORCHINDUCTOR_COMPILE_THREADS=2 \
+    .venv-optimization/bin/python -u tools/optimization/probe_reference_trt.py \
+    > result/logs/reference-trt-benchmark.log 2>&1
+
+Save depth arrays for visual comparison:
+  env -u PYTHONPATH HF_HUB_OFFLINE=1 .venv-optimization/bin/python -u \
+    tools/optimization/prepare_visual_inputs.py
+
+Render the eight-scene visual comparison:
+  env -u PYTHONPATH MPLBACKEND=Agg .venv-optimization/bin/python \
+    tools/optimization/plot_best_cases.py
+
+Artifacts:
+  result/optimization/reference-trt-nt2000-fp16/lingbot_depth_nt2000.onnx
+  result/optimization/reference-trt-nt2000-fp16/lingbot_depth_nt2000.engine
+  result/optimization/reference-trt-nt2000-fp16/conversion_report.json
+  result/optimization/reference-trt-benchmark.json
+  result/optimization/reference-trt-scene-0.pt through reference-trt-scene-7.pt
+  result/optimization/visuals/best_optimization_comparison.png
+  result/optimization/visuals/best_optimization_comparison_preview.jpg
+  result/optimization/visuals/best_optimization_manifest.json
+
+Fixed source commits:
+  Official model: f3a237e434ae987bc38281476d6cfb5df3e4d739
+  TensorRT reference: 60e69ab6ea5c65a2f19a22388a20d5969a8f556b
+  Model revision: 79204ed6b837f4fdd192cf563e59481fecfa0295
+  Model SHA256: b60cf27ddbd0e51e9b59b03475c0d39d02d2e48ecf8dbb5866f04d46802b3c23
+
+Timing convention:
+  Model and preprocessed inputs are resident on GPU.
+  Synchronize CUDA before and after each host-wall-clock measurement.
+  Baseline: original level 3 BF16, 20 measured runs per scene.
+  TensorRT modes: 50 measured runs per scene after warmup.
+  Input-buffer copies, startup, model loading, ONNX export, engine construction,
+  compilation, preprocessing, CPU/GPU transfer, and file I/O are excluded.
+
+Output differences from the original model:
+  Variable depth-token masking is disabled.
+  RGB interpolation antialias is disabled.
+  The engine only returns depth, without the original validity-mask head.
+  Point clouds are projected from the unmasked depth outside the engine.
+  Ordinary TensorRT and CUDA Graph depth outputs must match exactly.
+  Reported depth differences are prediction consistency checks. The bundled
+  examples have no ground-truth depth, so these checks do not measure accuracy.
+
+The TensorRT engine is built locally; rebuild it when changing GPU, TensorRT
+version, input dimensions, token count, or model weights.
+
+Measured results on 2026-10-13 (RTX 5060 Ti):
+  Original level 3 BF16:                              147.267 ms
+  TensorRT FP16 depth engine:                          67.767 ms
+  TensorRT FP16 plus GPU point-cloud projection:       67.890 ms
+  TensorRT CUDA Graph plus compiled projection:        67.907 ms
+  Combined speedup versus original level 3:             2.169 x
+  Combined rate derived from mean latency:             14.726 frames/second
+  ONNX export: 3.947 seconds; TensorRT build: 50.170 seconds.
+  Engine size: 646,536,156 bytes (616.585 MiB).
+  Target 2000 tokens produces a 39 x 52 patch grid (2028 patches) at 640 x 480.
+
+CUDA Graph and compiled projection add no measurable speed benefit over plain
+TensorRT plus projection in this run (difference: 0.017 ms). Both preserve the
+same tested TensorRT depth outputs; neither restores the original output mask.
+
+Validation status: PASS, 8/8 scenes.
+  All TensorRT outputs are finite positive depth tensors of shape [1, 480, 640].
+  Point clouds have shape [1, 480, 640, 3] and Z agrees exactly with depth.
+  CUDA Graph and ordinary TensorRT depth predictions are exactly equal.
+  Mean relative difference versus reference PyTorch FP16: 0.019%-0.131%.
+  Mean relative difference versus original level 3 BF16: 0.288%-0.649%.
+  Scene 3 has the largest baseline differences: P99 1.28125 m, max 6.14375 m.
+  These statistics only compare pixels with finite positive depth in both paths.
+  Small mean differences do not establish per-pixel equivalence or accuracy.
+
+Recreate the supported environment from package indexes:
+  uv venv --python 3.12 .venv-optimization
+  env -u PYTHONPATH uv pip install --python .venv-optimization/bin/python \
+    --index https://download.pytorch.org/whl/cu128 \
+    torch==2.8.0+cu128 torchvision==0.23.0+cu128 xformers==0.0.32.post2
+  env -u PYTHONPATH uv pip install --python .venv-optimization/bin/python -e '.[build,test]'
+  env -u PYTHONPATH uv pip check --python .venv-optimization/bin/python
+
+Published benchmark snapshot:
+  docs/optimization-results-5060-ti-20261013.json
+Optimization decisions and comparison to the live GUI:
+  docs/MODEL_OPTIMIZATION_PROCESS.md

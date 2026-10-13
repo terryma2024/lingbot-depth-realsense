@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- 实机是 D435I，序列号 `261922076696`；设备名称和比例以 SDK 实测为准。
+- 已验证硬件为 D435I；设备型号、序列号和比例在运行时通过 SDK 查询，不固定设备 ID。
 - RGB8＋Z16 640×480、30fps 采集；单相机、单引擎、batch=1、FP16、目标 2000 tokens。
 - 使用 `.venv-optimization` 与现有 `result/optimization/reference-trt-nt2000-fp16/lingbot_depth_nt2000.engine`。
 - 转换调度目标 10Hz；Qt 精确定时器 100ms；稳定期至少 60 秒，实际新结果显示率目标至少 9.5Hz。
@@ -135,7 +135,7 @@
 **Interfaces:** Consumes Task 5 CLI 与 JSON 报告。
 
 - [ ] 全套运行 `env -u PYTHONPATH QT_QPA_PLATFORM=offscreen .venv-optimization/bin/python -m pytest tests/realsense_gui -q`；GPU 用例另外显式开启，并记录每项通过/跳过原因。
-- [ ] 真实显示运行 `./run_gui.sh --serial 261922076696 --verify-seconds 60 --report result/realsense_gui/verification.json --screenshot result/realsense_gui/gui.png`，预热后测稳定期；每个运行阶段检查实际异常，不能只凭退出码判定正确。
+- [ ] 真实显示运行 `./run_gui.sh --verify-seconds 60 --report result/realsense_gui/verification.json --screenshot result/realsense_gui/gui.png`，预热后测稳定期；多设备时通过 SDK 查询目标序列号再传给 `--serial`。每个运行阶段检查实际异常，不能只凭退出码判定正确。
 - [ ] 截图检查四视图、色标和 3D 内容；检查记录覆盖多个变化帧，Z 与深度一致，目标实际 Hz≥9.5，报告 interval P95、端到端时延、GPU 时间与 own-PID 总显存。
 - [ ] 测试停止/重新开始、关闭后设备重开；拔插恢复仅在人为可执行时实测，否则清楚标明由模拟错误覆盖，没有实际拔插。
 - [ ] 性能不满足时分解采集/对齐/转换/传输/绘制耗时，使用 systematic-debugging；行为修复先增加失败测试，再修复、跑相关用例和全套用例。

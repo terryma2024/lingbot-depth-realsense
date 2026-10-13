@@ -6,7 +6,7 @@
 
 使用 PyQt 和 pyrealsense2，从当前连接的 RealSense 获取 RGB 与深度，经过现有 LingBot-Depth FP16 TensorRT 引擎及 GPU 点云投影，实时展示结果。用户已选择四个视图：RGB、原始深度、TRT 增强深度、可旋转的彩色 3D 点云。目标是预热后以 10Hz 展示新的转换结果。
 
-本机 `rs-enumerate-devices` 实测设备为 RealSense D435I，序列号 `261922076696`，固件 `5.17.3.10`，USB 类型 `3.2`。用户原文的 D534i 按当前实际连接设备处理；应用展示 SDK 返回的真实型号并允许指定序列号。
+已验证硬件为 RealSense D435I，固件 `5.17.3.10`，USB 类型 `3.2`。应用通过 `rs.context().query_devices()` 枚举设备，使用 `rs.camera_info.name` 和 `rs.camera_info.serial_number` 获取实际型号与序列号。单设备自动选择，多设备时指定 SDK 查询到的序列号；不固定到测量时使用的设备 ID。
 
 设备支持 RGB8 和 Z16 两路 640×480、30fps。当前 TensorRT 引擎固定 batch=1、640×480、FP16、目标 2000 tokens。相机用 30fps 采集，转换和显示以 10Hz 调度；10Hz 不作为硬件流配置。
 
