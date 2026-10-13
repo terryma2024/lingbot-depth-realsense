@@ -1,0 +1,6 @@
+pyrealsense2==2.59.1.11053
+PyQt6==6.11.0
+PyQt6-Qt6==6.11.2
+PyQt6-sip==13.13.0
+pyqtgraph==0.14.0
+PyOpenGL==3.1.10

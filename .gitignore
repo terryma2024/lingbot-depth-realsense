@@ -218,3 +218,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local GPU environments, checkpoints, engines and camera captures
+.venv-*/
+.venv-*
+result*/
+result
+checkpoints/
+.superpowers/
+*.engine
+*.onnx
+*.pt
+*.npz

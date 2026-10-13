@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lingbot-depth-realsense"
+version = "0.1.0"
+description = "RealSense live depth refinement and colored point-cloud viewer using LingBot-Depth TensorRT and PyQt"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "torch>=2.8.0,<2.9",
+    "tensorrt==10.12.0.36",
+    "numpy>=2.0",
+    "opencv-python>=4.10",
+    "pyrealsense2==2.59.1.11053",
+    "PyQt6==6.11.0",
+    "PyQt6-Qt6==6.11.2",
+    "PyQt6-sip==13.13.0",
+    "pyqtgraph==0.14.0",
+    "PyOpenGL==3.1.10",
+]
+
+[project.optional-dependencies]
+build = [
+    "torchvision==0.23.0",
+    "xformers==0.0.32.post2",
+    "huggingface_hub>=1.0",
+    "onnx==1.23.2",
+    "onnxruntime==1.31.0",
+    "scipy",
+    "matplotlib",
+    "trimesh",
+    "pillow",
+    "click",
+]
+test = ["pytest==9.1.1", "pytest-qt==4.5.0"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mdm*", "tools.realsense_gui*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/realsense_gui"]

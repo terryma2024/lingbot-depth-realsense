@@ -1,0 +1,61 @@
+RealSense + LingBot-Depth TRT 实时 GUI
+
+启动
+  cd /data/models/lingbot/lingbot-depth-realsense
+  ./run_gui.sh
+
+单设备自动选择；当前相机为 D435i，序列号 261922076696。
+指定设备：./run_gui.sh --serial 261922076696
+指定引擎：./run_gui.sh --engine /absolute/path/lingbot_depth_nt2000.engine
+
+环境
+  使用已有 .venv-optimization（torch 2.8.0+cu128、TensorRT 10.12.0.36）。
+  uv pip install --python .venv-optimization/bin/python -r tools/realsense_gui/requirements.txt
+  当前用户 uv 默认索引已配置为清华镜像，位于 ~/.config/uv/uv.toml。
+  启动脚本清除 ROS PYTHONPATH，应用选择 PyQt6 自带插件，避免 OpenCV Qt5 插件冲突。
+  需要本机图形显示与 OpenGL；当前 DISPLAY=:1。
+  Ubuntu Qt6 系统依赖：sudo apt-get install libxcb-cursor0（本机已安装）。
+
+操作
+  窗口打开后自动启动，初始化和 GPU 预热在后台进行。
+  四视图：RGB、对齐到 RGB 的原始深度、TRT 增强深度、彩色 3D 点云。
+  相机采集为 640×480、30fps；转换和显示目标为 10Hz，只保留最新帧。
+  开始/停止控制 SDK 与 GPU 生命周期；停止后可再次开始。
+  点云鼠标拖动旋转、滚轮缩放；“重置 3D 视角”恢复默认视点。
+  距离上限默认 5m，点云步长默认 2（最多 76800 个显示点）。
+  改距离或步长仅影响显示，GPU 始终完成全分辨率投影。
+  两张深度图共用 0.1m 到距离上限的 TURBO 色标，黑色是无效深度。
+  输入、增强深度与 XYZ 的单位均为米；显示坐标为 X向右、Y向前、Z向上。
+
+状态与测量
+  Hz 统计新的转换结果，不统计重复画面。
+  窗口展示最近 2 秒的实际更新率，停止或没有新结果时下降至零。
+  转换耗时包括 CPU 预处理、GPU 输入复制、TRT、投影与结果拷回。
+  GPU 耗时为 CUDA event 测得的 TRT+编译投影时间。
+  应用延迟为主机 SDK 收到帧到 GUI 更新提交；不包括曝光、USB 和显示器扫描。
+
+实机验收（预热后连续 60 秒，保存报告与截图后自动退出）
+  ./run_gui.sh --serial 261922076696 --verify-seconds 60 \
+    --report result/realsense_gui/verification.json \
+    --screenshot result/realsense_gui/gui.png
+  验收只统计截止时刻之前的新结果，检查几何一致、RGB/输出变化和资源清理。
+
+测试
+  uv pip install --python .venv-optimization/bin/python pytest pytest-qt
+  env -u PYTHONPATH QT_QPA_PLATFORM=offscreen PYTEST_QT_API=pyqt6 \
+    .venv-optimization/bin/python -m pytest tests/realsense_gui -q
+  env -u PYTHONPATH LINGBOT_GUI_GPU_TESTS=1 TORCHINDUCTOR_COMPILE_THREADS=2 \
+    .venv-optimization/bin/python -m pytest tests/realsense_gui/test_runtime.py -q
+  offscreen 模式仅测试事件和数据，OpenGL 内容以真实显示截图及实机验收为准。
+
+错误恢复
+  无相机：检查 USB；多设备时指定 --serial；设备占用时关闭其他取流程序。
+  设备断开或连续超时后，等待线程清理，重新连接，再点击“开始”。
+  如果 RGB 可取而深度流没有帧，重新连接 USB 可复位设备状态。
+  引擎不匹配：须使用本机已构建的 640×480 FP16 引擎及匹配 TensorRT 版本。
+  关闭时等待当前取帧/GPU 操作结束再释放资源，不强行终止线程。
+
+预测语义
+  复用当前优化引擎：无原始置信度掩码，关闭 depth-token masking 和 RGB antialias。
+  增强深度包含网络补全，显示距离筛选不是置信度筛选。
+  结果是实时预测与可视化，不能当作逐像素精度保证。
